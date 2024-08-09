@@ -1,22 +1,22 @@
-'use client'
-
-import { Box, Stack, TextField, Button, Typography } from "@mui/material"
-import { useState} from "react";
+"use client";
+import * as React from 'react';
+import { Box, Stack, TextField, Button, Typography, Modal } from "@mui/material";
+import { useState } from "react";
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import DownloadIcon from '@mui/icons-material/Download';
-
 import jsPDF from "jspdf";
 import 'jspdf-autotable';
 import Header from "./components/header"; 
-import Login from "./components/login"
-
-
+import Login from "./components/login";
+import Review from "./components/modal"
+import AccountCircle from '@mui/icons-material/AccountCircle';
 
 export default function Home() {
   const [darkMode, setDarkMode] = useState(false);
   const [history, setHistory] = useState([]);
   const [message, setMessage] = useState("");
+  const [openModal, setOpenModal] = useState(false);
 
   const firstMessage = "Hi there! I'm the Headstarter customer service. How can I help?";
    
@@ -24,20 +24,27 @@ export default function Home() {
     setDarkMode(!darkMode);
   };
 
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
   const sendMessage = async () => {
+    if (message.toLowerCase() === "y") {
+      setOpenModal(true);
+    }
+    
     setHistory((history) => [ ...history, {role: "user", parts: [{text: message}]} ])
-    setMessage('')
+    setMessage('');
 
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify([ ...history, {role: "user", parts: [{text: message}]} ])
-    })
+    });
 
     const data = await response.json();
 
     setHistory((history) => [ ...history, {role: "model", parts: [{text: data}] }])
-
   };
   
   const clearConversation = () => {
@@ -62,10 +69,7 @@ export default function Home() {
     doc.save("conversation_log.pdf");
   };
 
-  
-  
   return (
-
     <Box
       width="100vw"
       height="100vh"
@@ -75,8 +79,8 @@ export default function Home() {
       alignItems="center"
       bgcolor={darkMode ? "#121212" : "#f5f5f5"}
     >
-      <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />  {/* Use Header here */}
-  
+      <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} /> {/* Use Header here */}
+
       <Stack
         direction="column"
         width="600px"
@@ -88,34 +92,36 @@ export default function Home() {
         spacing={3}
         overflow="auto"
         marginBottom="5%"
+        sx={{ opacity: openModal ? 0.5 : 1 }} // Lower opacity when modal is open
       >
         <Stack direction="row" display="flex">
-            <Button
-              onClick={clearConversation}
-              sx={{
-                alignSelf: 'flex-end',
-                mb: 1,
-                position: 'static',
-                bgcolor: darkMode ? "grey.800" : "grey.300",
-                color: darkMode ? "white" : "black",
-              }}
-            >
-              <DeleteOutlinedIcon /> Clear
-            </Button>
-            <Button
-              onClick={generatePDF}
-              sx={{
-                alignSelf: 'flex-end',
-                position: 'static',
-                mb: 1,
-                bgcolor: darkMode ? "grey.800" : "grey.300",
-                color: darkMode ? "white" : "black",
-                marginLeft: "75%",
-              }}
-            >
-              <DownloadIcon />
-            </Button>
-          </Stack>
+          <Button
+            onClick={clearConversation}
+            sx={{
+              alignSelf: 'flex-end',
+              mb: 1,
+              paddingRight: "10px",
+              position: 'static',
+              bgcolor: darkMode ? "grey.800" : "grey.300",
+              color: darkMode ? "white" : "black",
+            }}
+          >
+            <DeleteOutlinedIcon /> Clear
+          </Button>
+          <Button
+            onClick={generatePDF}
+            sx={{
+              alignSelf: 'flex-end',
+              position: 'static',
+              mb: 1,
+              bgcolor: darkMode ? "grey.800" : "grey.300",
+              color: darkMode ? "white" : "black",
+              marginLeft: "75%",
+            }}
+          >
+            <DownloadIcon />
+          </Button>
+        </Stack>
         <Stack
           direction="column"
           spacing={2}
@@ -137,16 +143,25 @@ export default function Home() {
               {firstMessage}
             </Typography>
           </Box>
-  
+
           {history.map((textObject, index) => (
             <Box
               key={index}
               display="flex"
-              justifyContent={
-                textObject.role === 'user' ? 'flex-end' : 'flex-start'
-              }
+              flexDirection="column"
+              alignItems={textObject.role === 'user' ? 'flex-end' : 'flex-start'}
               mb={2}
             >
+              {textObject.role !== 'user' && (
+                <Typography
+                  fontSize="15px"
+                  color={darkMode ? "white" : "grey.500"}
+                  mb={1}
+                  marginLeft={2}
+                >
+                  Headstarter Assistant
+                </Typography>
+              )}
               <Box
                 bgcolor={
                   textObject.role === 'user'
@@ -170,7 +185,7 @@ export default function Home() {
             </Box>
           ))}
         </Stack>
-  
+
         <Stack
           direction="row"
           spacing={2}
@@ -179,14 +194,11 @@ export default function Home() {
           alignItems="center"
           justifyContent="center"
         >
-          <TextField
+        <AccountCircle fontSize='large'/>
+          <TextField 
             label="Type your message..."
             value={message}
-            onChange={(e) =>
-              e.target.value === ""
-                ? setMessage("I'm not sure I understand")
-                : setMessage(e.target.value)
-            }
+            onChange={(e) => setMessage(e.target.value)}
             variant="outlined"
             fullWidth
             sx={{
@@ -213,7 +225,10 @@ export default function Home() {
           </Button>
         </Stack>
       </Stack>
+
+      {/* Call Review Component here if modal is open */}
+      {openModal && <Review handleClose={handleCloseModal} />}
     </Box>
   );
-
 }
+
