@@ -1,113 +1,219 @@
-import Image from "next/image";
+'use client'
+
+import { Box, Stack, TextField, Button, Typography } from "@mui/material"
+import { useState} from "react";
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import DownloadIcon from '@mui/icons-material/Download';
+
+import jsPDF from "jspdf";
+import 'jspdf-autotable';
+import Header from "./components/header"; 
+import Login from "./components/login"
+
+
 
 export default function Home() {
+  const [darkMode, setDarkMode] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [message, setMessage] = useState("");
+
+  const firstMessage = "Hi there! I'm the Headstarter customer service. How can I help?";
+   
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+  const sendMessage = async () => {
+    setHistory((history) => [ ...history, {role: "user", parts: [{text: message}]} ])
+    setMessage('')
+
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify([ ...history, {role: "user", parts: [{text: message}]} ])
+    })
+
+    const data = await response.json();
+
+    setHistory((history) => [ ...history, {role: "model", parts: [{text: data}] }])
+
+  };
+  
+  const clearConversation = () => {
+    setHistory([]);
+    setMessage("");
+  };
+
+  const generatePDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(12);
+    doc.text("Conversation Log", 14, 16);
+
+    const columns = ["Role", "Message"];
+    const rows = history.map(item => [item.role, item.parts[0].text]);
+    doc.autoTable({
+      head: [columns],
+      body: rows,
+      startY: 20,
+    });
+
+    doc.save("conversation_log.pdf");
+  };
+
+  
+  
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+    <Box
+      width="100vw"
+      height="100vh"
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
+      bgcolor={darkMode ? "#121212" : "#f5f5f5"}
+    >
+      <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />  {/* Use Header here */}
+  
+      <Stack
+        direction="column"
+        width="600px"
+        height="600px"
+        boxShadow="0 4px 20px rgba(0, 0, 0, 0.1)"
+        borderRadius={8}
+        bgcolor={darkMode ? "#333" : "white"}
+        p={2}
+        spacing={3}
+        overflow="auto"
+        marginBottom="5%"
+      >
+        <Stack direction="row" display="flex">
+            <Button
+              onClick={clearConversation}
+              sx={{
+                alignSelf: 'flex-end',
+                mb: 1,
+                position: 'static',
+                bgcolor: darkMode ? "grey.800" : "grey.300",
+                color: darkMode ? "white" : "black",
+              }}
+            >
+              <DeleteOutlinedIcon /> Clear
+            </Button>
+            <Button
+              onClick={generatePDF}
+              sx={{
+                alignSelf: 'flex-end',
+                position: 'static',
+                mb: 1,
+                bgcolor: darkMode ? "grey.800" : "grey.300",
+                color: darkMode ? "white" : "black",
+                marginLeft: "75%",
+              }}
+            >
+              <DownloadIcon />
+            </Button>
+          </Stack>
+        <Stack
+          direction="column"
+          spacing={2}
+          flexGrow={1}
+          overflow="auto"
+          maxHeight="100%"
+          pr={1}
+        >
+          <Box
+            display="flex"
+            justifyContent="flex-start"
+            bgcolor={darkMode ? "grey.700" : "lightblue"}
+            borderRadius={8}
+            p={2}
+            mb={2}
+            maxWidth="70%"
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
+            <Typography color="white" variant="body1">
+              {firstMessage}
+            </Typography>
+          </Box>
+  
+          {history.map((textObject, index) => (
+            <Box
+              key={index}
+              display="flex"
+              justifyContent={
+                textObject.role === 'user' ? 'flex-end' : 'flex-start'
+              }
+              mb={2}
+            >
+              <Box
+                bgcolor={
+                  textObject.role === 'user'
+                    ? darkMode
+                      ? "#37474F"
+                      : "lightgreen"
+                    : darkMode
+                    ? "grey.700"
+                    : "lightblue"
+                }
+                color="white"
+                borderRadius={8}
+                p={2}
+                maxWidth="75%"
+                boxShadow="0 2px 10px rgba(0, 0, 0, 0.1)"
+              >
+                <Typography component="div" sx={{ whiteSpace: 'pre-line' }}>
+                  {textObject.parts[0].text}
+                </Typography>
+              </Box>
+            </Box>
+          ))}
+        </Stack>
+  
+        <Stack
+          direction="row"
+          spacing={2}
+          width="100%"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
         >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+          <TextField
+            label="Type your message..."
+            value={message}
+            onChange={(e) =>
+              e.target.value === ""
+                ? setMessage("I'm not sure I understand")
+                : setMessage(e.target.value)
+            }
+            variant="outlined"
+            fullWidth
+            sx={{
+              borderRadius: 4,
+              backgroundColor: darkMode ? "#424242" : "#fff",
+              color: darkMode ? "white" : "black",
+            }}
+            InputLabelProps={{
+              style: { color: darkMode ? "white" : "black" },
+            }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={sendMessage}
+            sx={{
+              padding: '14px 24px',
+              borderRadius: 4,
+              textTransform: 'none',
+              fontWeight: 'bold',
+            }}
+          >
+            <ArrowUpwardIcon />
+          </Button>
+        </Stack>
+      </Stack>
+    </Box>
   );
+
 }
