@@ -23,4 +23,4 @@ pnpm dev
 # or
 bun dev
 ```
-And Enjoy!
+Enjoy!
