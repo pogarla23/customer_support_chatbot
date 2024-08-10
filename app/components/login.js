@@ -1,104 +1,80 @@
 import * as React from 'react';
-import { Link, Button, TextField, Typography, Container, Box, CssBaseline } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Header from './header';
+import CssBaseline from '@mui/material/CssBaseline';
 
-function ModeToggle() {
-  const [mode, setMode] = React.useState('light');
+import {Avatar, Button, TextField, Box, Typography, Container, GoogleIcon} from '@mui/material'
 
-  React.useEffect(() => {
-    // Check the current theme mode from local storage or default to light
-    const savedMode = localStorage.getItem('themeMode');
-    if (savedMode) {
-      setMode(savedMode);
-    }
-  }, []);
 
-  React.useEffect(() => {
-    // Save the current theme mode to local storage
-    localStorage.setItem('themeMode', mode);
-  }, [mode]);
-
-  const theme = createTheme({
-    palette: {
-      mode: mode,
-    },
-  });
+export default function SignIn() {
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    console.log({
+      email: data.get('email'),
+      password: data.get('password'),
+    });
+  };
 
   return (
-    <Button
-      variant="contained"
-      onClick={() => {
-        setMode(mode === 'light' ? 'dark' : 'light');
-      }}
-    >
-      {mode === 'light' ? 'Turn dark' : 'Turn light'}
-    </Button>
-  );
-}
-
-export default function LoginFinal() {
-  const theme = createTheme({
-    // Default theme configuration can be added here if needed
-  });
-
-  return (
-    <Header/>,
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
       <Container component="main" maxWidth="xs">
-        <ModeToggle />
         <Box
           sx={{
-            width: '100%',
-            mt: 4, // margin top
-            py: 3, // padding top & bottom
-            px: 2, // padding left & right
+            marginTop: 8,
             display: 'flex',
             flexDirection: 'column',
-            gap: 2,
-            borderRadius: 1,
-            boxShadow: 3,
-            backgroundColor: theme.palette.background.paper,
+            alignItems: 'center',
           }}
         >
-          <div>
-            <Typography variant="h4" component="h1">
-              <b>Welcome</b>
-            </Typography>
-            <Typography variant="body2">Sign in to continue.</Typography>
-          </div>
-          <TextField
-            label="Email"
-            name="email"
-            type="email"
-            placeholder="enter"
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Password"
-            name="password"
-            type="password"
-            fullWidth
-            margin="normal"
-          />
-          <Button
-            variant="contained"
-            fullWidth
-            sx={{ mt: 1 /* margin top */ }}
-          >
-            Log in
-          </Button>
-          <Typography
-            variant="body2"
-            align="center"
-            sx={{ mt: 2 }}
-          >
-            Don&apos;t have an account? <Link href="/sign-up">Sign up</Link>
+          <Typography component="h1" variant="h5">
+            Sign in
           </Typography>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="Email Address"
+              name="email"
+              autoComplete="email"
+              autoFocus
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Sign In
+            </Button>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Box sx={{ flexGrow: 1, height: '1px', bgcolor: 'divider' }} />
+              <Typography variant="body2" sx={{ mx: 2 }}>
+                OR
+              </Typography>
+              <Box sx={{ flexGrow: 1, height: '1px', bgcolor: 'divider' }} />
+            </Box>
+
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<GoogleIcon />}
+              sx={{ mt: 2 }}
+            >
+              Sign in with Google
+            </Button>
+          </Box>
         </Box>
       </Container>
-    </ThemeProvider>
   );
 }

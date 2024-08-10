@@ -68,7 +68,6 @@ export default function Home() {
 
     doc.save("conversation_log.pdf");
   };
-
   return (
     <Box
       width="100vw"
@@ -92,13 +91,13 @@ export default function Home() {
         spacing={3}
         overflow="auto"
         marginBottom="5%"
-        sx={{ opacity: openModal ? 0.5 : 1 }} // Lower opacity when modal is open
+        sx={{ opacity: openModal ? 0.5 : 1 }} 
       >
         <Stack direction="row" display="flex">
           <Button
             onClick={clearConversation}
             sx={{
-              alignSelf: 'flex-end',
+              alignSelf: 'flex-start',
               mb: 1,
               paddingRight: "10px",
               position: 'static',
@@ -111,12 +110,12 @@ export default function Home() {
           <Button
             onClick={generatePDF}
             sx={{
-              alignSelf: 'flex-end',
+              alignSelf: 'flex-start',
               position: 'static',
               mb: 1,
               bgcolor: darkMode ? "grey.800" : "grey.300",
               color: darkMode ? "white" : "black",
-              marginLeft: "75%",
+               marginLeft: "2%"
             }}
           >
             <DownloadIcon />

@@ -173,7 +173,7 @@ If the user asks "What is your purpouse?" respond with:
 
   If they ask the link to the website here is the website:https://headstarter.co/about
 
-  Now if you have resolved their issue, ask if there is anything else you can help them with. If not, tell them if they want to leave a review, and respond with Y/N. 
+  Now if you have resolved their issue, ask if there is anything else you can help them with. If not, tell them if they want to leave a review with an option: Y/N. 
 
   If they type N, then give then a thank you and farewell
 `
