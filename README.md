@@ -24,3 +24,8 @@ pnpm dev
 bun dev
 ```
 Enjoy!
+
+
+Future Goals:
+- This is a basic chatbot, I hope to implement other RAG features and incoporate it in future projects to maximize user experience.
+- Provide Authentication using NEXTAUTH or Clerk
